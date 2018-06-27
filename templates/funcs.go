@@ -1,6 +1,7 @@
 package templates
 
 import (
+	"bytes"
 	"fmt"
 	"text/template"
 
@@ -34,6 +35,22 @@ func name(f pgs.Field) string {
 	}
 
 	return f.Name().String()
+}
+
+func isSimple(t string) bool {
+	switch t {
+	case "float64",
+		"float32",
+		"int32",
+		"int64",
+		"uint32",
+		"uint64",
+		"bool",
+		"string",
+		"[]byte":
+		return true
+	}
+	return false
 }
 
 func simpleAddFunc(n pgs.Name, t pgs.FieldType) string {
@@ -89,10 +106,6 @@ func arrayFunc(typ pgs.FieldType) string {
 
 	t := typ.Element()
 
-	if t.IsEmbed() {
-		return "Objects"
-	}
-
 	switch t.Name() {
 	case "float64":
 		// proto: double
@@ -121,15 +134,13 @@ func arrayFunc(typ pgs.FieldType) string {
 	case "bool":
 		// proto: bool
 		return "Bools"
-	case "string":
-		// proto: string
-		return "StringArray"
 	case "[]byte":
 		// proto: bytes
 		return "ByteStringsArray"
 	}
 
-	return "Interfaces"
+	// proto: string
+	return "StringArray"
 }
 
 func wellKnowType(t string) bool {
@@ -161,12 +172,33 @@ if %s != nil {
 }
 `
 
-const stringerArrayTpl = `
-gd2 := make(utils.Stringers, len(%s))
-for i12, afd3 := range %s {
-	gd2[i12] = afd3
+// ArrayData used to fill arrayTpl
+type ArrayData struct {
+	SliceName string
+	IndexName string
+	ItemName  string
+	SliceType string
+	Getter    string
+	Key       string
 }
-o.AddArray("%s", utils.Stringers(gd2))
+
+func newArrayData(sliceType string, getter string, key string) ArrayData {
+	return ArrayData{
+		SliceName: "s" + lowerString(4),
+		IndexName: "i" + lowerString(4),
+		ItemName:  "o" + lowerString(4),
+		SliceType: sliceType,
+		Getter:    getter,
+		Key:       key,
+	}
+}
+
+const arrayTpl = `
+{{ .SliceName }} := make(utils.{{ .SliceType }}, len({{ .Getter }}))
+for {{ .IndexName }}, {{ .ItemName }} := range {{ .Getter }} {
+	{{ .SliceName }}[{{ .IndexName }}] = {{ .ItemName }}
+}
+o.AddArray("{{ .Key }}", {{ .SliceName }})
 `
 
 func render(f pgs.Field) string {
@@ -177,10 +209,39 @@ func render(f pgs.Field) string {
 
 	// repeated
 	if t.IsRepeated() {
+
 		if t.Element().IsEnum() || wellKnowType(t.Element().Name().String()) {
-			s = fmt.Sprintf(stringerArrayTpl, getter(n, t), getter(n, t), name(f))
-		} else {
+
+			d := newArrayData("Stringers", getter(n, t), name(f))
+			tpl := template.New("stringers")
+			template.Must(tpl.Parse(arrayTpl))
+			bb := bytes.NewBufferString("")
+			_ = tpl.Execute(bb, d)
+
+			s = bb.String()
+
+		} else if t.Element().IsEmbed() {
+
+			d := newArrayData("Objects", getter(n, t), name(f))
+			tpl := template.New("objects")
+			template.Must(tpl.Parse(arrayTpl))
+			bb := bytes.NewBufferString("")
+			_ = tpl.Execute(bb, d)
+
+			s = bb.String()
+
+		} else if isSimple(t.Element().Name().String()) {
+
 			s = fmt.Sprintf(`o.AddArray("%s", utils.%s(%s))`, name(f), arrayFunc(t), getter(n, t))
+
+		} else {
+			d := newArrayData("Interfaces", getter(n, t), name(f))
+			tpl := template.New("interfaces")
+			template.Must(tpl.Parse(arrayTpl))
+			bb := bytes.NewBufferString("")
+			_ = tpl.Execute(bb, d)
+
+			s = bb.String()
 		}
 	} else {
 		s = fmt.Sprintf(`o.%s("%s", %s)`, simpleAddFunc(n, t), name(f), getter(n, t))

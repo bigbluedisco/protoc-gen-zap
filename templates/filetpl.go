@@ -9,6 +9,12 @@ import (
 	"github.com/bigbluedisco/protoc-gen-zap/utils"
 )
 
+// ensure the imports are used
+var (
+	_ = (*utils.Interfaces)(nil)
+	_ = zapcore.InfoLevel
+)
+
 {{ range .AllMessages }}
 	{{ template "message" . }}
 {{ end }}
