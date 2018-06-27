@@ -1,6 +1,8 @@
 # protoc-gen-zap
 
-Automated code generation for your protobuf objects to implement `zap.ObjectMarshaler`, using [lyft/protoc-gen-star](https://github.com/lyft/protoc-gen-star)
+**Warning: this is an early version - do not use in production**
+
+Automated code generation for your protobuf objects to implement [`zap.ObjectMarshaler`](https://github.com/uber-go/zap/blob/master/zapcore/marshaler.go), based on [lyft/protoc-gen-star](https://github.com/lyft/protoc-gen-star)
 
 This is useful to log protobuf objects in zap without heavy reflection:
 
