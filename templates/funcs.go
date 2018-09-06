@@ -248,7 +248,7 @@ func render(f pgs.Field) string {
 	} else if t.IsEmbed() {
 		if wellKnowType(t.Name().String()) {
 			s = fmt.Sprintf(`if %s != nil {
-				o.String("%s", %s.String())
+				o.AddString("%s", %s.String())
 			}`, getter(n, t), name(f), getter(n, t))
 		} else {
 			s = fmt.Sprintf(`if %s != nil {
