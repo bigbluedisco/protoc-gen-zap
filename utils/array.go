@@ -11,6 +11,9 @@ type Float64s []float64
 
 // MarshalLogArray conforms to zap ArrayMarshaler
 func (nums Float64s) MarshalLogArray(arr zapcore.ArrayEncoder) error {
+	if nums == nil {
+		return nil
+	}
 	for i := range nums {
 		arr.AppendFloat64(nums[i])
 	}
@@ -22,6 +25,9 @@ type Float32s []float32
 
 // MarshalLogArray conforms to zap ArrayMarshaler
 func (nums Float32s) MarshalLogArray(arr zapcore.ArrayEncoder) error {
+	if nums == nil {
+		return nil
+	}
 	for i := range nums {
 		arr.AppendFloat32(nums[i])
 	}
@@ -33,6 +39,9 @@ type Int32s []int32
 
 // MarshalLogArray conforms to zap ArrayMarshaler
 func (nums Int32s) MarshalLogArray(arr zapcore.ArrayEncoder) error {
+	if nums == nil {
+		return nil
+	}
 	for i := range nums {
 		arr.AppendInt32(nums[i])
 	}
@@ -44,6 +53,9 @@ type Int64s []int64
 
 // MarshalLogArray conforms to zap ArrayMarshaler
 func (nums Int64s) MarshalLogArray(arr zapcore.ArrayEncoder) error {
+	if nums == nil {
+		return nil
+	}
 	for i := range nums {
 		arr.AppendInt64(nums[i])
 	}
@@ -55,6 +67,9 @@ type Uint32s []uint32
 
 // MarshalLogArray conforms to zap ArrayMarshaler
 func (nums Uint32s) MarshalLogArray(arr zapcore.ArrayEncoder) error {
+	if nums == nil {
+		return nil
+	}
 	for i := range nums {
 		arr.AppendUint32(nums[i])
 	}
@@ -66,6 +81,9 @@ type Uint64s []uint64
 
 // MarshalLogArray conforms to zap ArrayMarshaler
 func (nums Uint64s) MarshalLogArray(arr zapcore.ArrayEncoder) error {
+	if nums == nil {
+		return nil
+	}
 	for i := range nums {
 		arr.AppendUint64(nums[i])
 	}
@@ -77,6 +95,9 @@ type Bools []bool
 
 // MarshalLogArray conforms to zap ArrayMarshaler
 func (bs Bools) MarshalLogArray(arr zapcore.ArrayEncoder) error {
+	if bs == nil {
+		return nil
+	}
 	for i := range bs {
 		arr.AppendBool(bs[i])
 	}
@@ -88,6 +109,9 @@ type StringArray []string
 
 // MarshalLogArray conforms to zap ArrayMarshaler
 func (ss StringArray) MarshalLogArray(arr zapcore.ArrayEncoder) error {
+	if ss == nil {
+		return nil
+	}
 	for i := range ss {
 		arr.AppendString(ss[i])
 	}
@@ -99,6 +123,9 @@ type ByteStringsArray [][]byte
 
 // MarshalLogArray conforms to zap ArrayMarshaler
 func (bss ByteStringsArray) MarshalLogArray(arr zapcore.ArrayEncoder) error {
+	if bss == nil {
+		return nil
+	}
 	for i := range bss {
 		arr.AppendByteString(bss[i])
 	}
@@ -110,8 +137,13 @@ type Objects []zapcore.ObjectMarshaler
 
 // MarshalLogArray conforms to zap ArrayMarshaler
 func (os Objects) MarshalLogArray(arr zapcore.ArrayEncoder) error {
+	if os == nil {
+		return nil
+	}
 	for i := range os {
-		arr.AppendObject(os[i])
+		if os[i] != nil {
+			arr.AppendObject(os[i])
+		}
 	}
 	return nil
 }
@@ -121,8 +153,13 @@ type Interfaces []interface{}
 
 // MarshalLogArray conforms to zap ArrayMarshaler
 func (is Interfaces) MarshalLogArray(arr zapcore.ArrayEncoder) error {
+	if is == nil {
+		return nil
+	}
 	for i := range is {
-		arr.AppendReflected(is[i])
+		if is[i] != nil {
+			arr.AppendReflected(is[i])
+		}
 	}
 	return nil
 }
@@ -132,6 +169,9 @@ type Stringers []fmt.Stringer
 
 // MarshalLogArray conforms to zap ArrayMarshaler
 func (ss Stringers) MarshalLogArray(arr zapcore.ArrayEncoder) error {
+	if ss == nil {
+		return nil
+	}
 	for i := range ss {
 		arr.AppendString(ss[i].String())
 	}

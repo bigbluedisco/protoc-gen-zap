@@ -6,7 +6,7 @@ Automated code generation for your protobuf objects to implement [`zap.ObjectMar
 
 This is useful to log protobuf objects in zap without heavy reflection:
 
-``` go
+```go
 l, _ := zap.NewProduction()
 
 l.Info("create-user",
@@ -18,7 +18,7 @@ l.Info("create-user",
 
 Make sure `dep` is installed on your machine, then run:
 
-``` bash
+```bash
 dep ensure
 go build
 go install
@@ -28,6 +28,6 @@ go install
 
 Code generation is done in the `protoc` flow:
 
-``` bash
+```bash
 protoc -I . -I ${GOPATH}/src --go_out=":./out" --zap_out="lang=go:./out" test.proto
 ```

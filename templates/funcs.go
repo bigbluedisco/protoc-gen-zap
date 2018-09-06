@@ -59,10 +59,6 @@ func simpleAddFunc(n pgs.Name, t pgs.FieldType) string {
 		return "AddString"
 	}
 
-	if t.IsEmbed() {
-		return "AddObject"
-	}
-
 	switch t.Name() {
 	case "float64":
 		// proto: double
@@ -201,6 +197,12 @@ for {{ .IndexName }}, {{ .ItemName }} := range {{ .Getter }} {
 o.AddArray("{{ .Key }}", {{ .SliceName }})
 `
 
+const embedTpl = `
+if {{ .Getter }} != nil {
+	o.AddObject("{{ .Key }}, {{ .Getter }})
+}
+`
+
 func render(f pgs.Field) string {
 	t := f.Type()
 	n := f.Name()
@@ -243,6 +245,10 @@ func render(f pgs.Field) string {
 
 			s = bb.String()
 		}
+	} else if t.IsEmbed() {
+		s = fmt.Sprintf(`if %s != nil {
+	o.AddObject("%s", %s)
+}`, getter(n, t), name(f), getter(n, t))
 	} else {
 		s = fmt.Sprintf(`o.%s("%s", %s)`, simpleAddFunc(n, t), name(f), getter(n, t))
 	}
