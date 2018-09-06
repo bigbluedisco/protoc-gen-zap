@@ -3,6 +3,7 @@ package templates
 import (
 	"bytes"
 	"fmt"
+	"strings"
 	"text/template"
 
 	pgs "github.com/lyft/protoc-gen-star"
@@ -179,10 +180,11 @@ type ArrayData struct {
 }
 
 func newArrayData(sliceType string, getter string, key string) ArrayData {
+	name := strings.Replace(key, "_", "", -1) + strings.ToLower(sliceType)
 	return ArrayData{
-		SliceName: "s" + lowerString(4),
-		IndexName: "i" + lowerString(4),
-		ItemName:  "o" + lowerString(4),
+		SliceName: name,
+		IndexName: name + "k",
+		ItemName:  name + "v",
 		SliceType: sliceType,
 		Getter:    getter,
 		Key:       key,
