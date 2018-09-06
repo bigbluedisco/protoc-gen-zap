@@ -21,7 +21,7 @@ func Register(tpl *template.Template) {
 func getter(n pgs.Name, t pgs.FieldType) string {
 	s := fmt.Sprintf("c.Get%s()", n.UpperCamelCase())
 
-	if t.IsEnum() || wellKnowType(t.Name().String()) {
+	if t.IsEnum() {
 		return s + ".String()"
 	}
 
@@ -55,7 +55,7 @@ func isSimple(t string) bool {
 
 func simpleAddFunc(n pgs.Name, t pgs.FieldType) string {
 
-	if t.IsEnum() || wellKnowType(t.Name().String()) {
+	if t.IsEnum() {
 		return "AddString"
 	}
 
@@ -246,9 +246,15 @@ func render(f pgs.Field) string {
 			s = bb.String()
 		}
 	} else if t.IsEmbed() {
-		s = fmt.Sprintf(`if %s != nil {
-	o.AddObject("%s", %s)
-}`, getter(n, t), name(f), getter(n, t))
+		if wellKnowType(t.Name().String()) {
+			s = fmt.Sprintf(`if %s != nil {
+				o.String("%s", %s.String())
+			}`, getter(n, t), name(f), getter(n, t))
+		} else {
+			s = fmt.Sprintf(`if %s != nil {
+				o.AddObject("%s", %s)
+			}`, getter(n, t), name(f), getter(n, t))
+		}
 	} else {
 		s = fmt.Sprintf(`o.%s("%s", %s)`, simpleAddFunc(n, t), name(f), getter(n, t))
 	}
