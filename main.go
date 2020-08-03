@@ -2,13 +2,14 @@ package main
 
 import (
 	"github.com/bigbluedisco/protoc-gen-zap/module"
-	"github.com/lyft/protoc-gen-star"
+	pgs "github.com/lyft/protoc-gen-star"
+	pgsgo "github.com/lyft/protoc-gen-star/lang/go"
 )
 
 func main() {
 	pgs.
 		Init(pgs.DebugEnv("DEBUG_PGV")).
 		RegisterModule(module.Zap()).
-		RegisterPostProcessor(pgs.GoFmt()).
+		RegisterPostProcessor(pgsgo.GoFmt()).
 		Render()
 }

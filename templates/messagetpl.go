@@ -2,8 +2,8 @@ package templates
 
 const messageTpl = `
 
-// MarshalLogObject makes {{ .TypeName }} implement zap.ObjectMarshaler
-func (c {{ .TypeName }}) MarshalLogObject(o zapcore.ObjectEncoder) error {
+// MarshalLogObject makes {{ go_type_name . }} implement zap.ObjectMarshaler
+func (c {{ go_type_name . }}) MarshalLogObject(o zapcore.ObjectEncoder) error {
 
 	{{ range .Fields }}
 		

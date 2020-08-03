@@ -2,7 +2,7 @@
 
 
 [[projects]]
-  digest = "1:ce5c8d445bf955512b0bd07bec95778f23c7d4032a075c18d1e4bbf29eb3f87e"
+  digest = "1:b1c94ac38434c2944dc5ee396d95f5d51209b2669f582f7ae6ac5a3b72e2a59e"
   name = "github.com/golang/protobuf"
   packages = [
     "proto",
@@ -10,19 +10,21 @@
     "protoc-gen-go/generator",
     "protoc-gen-go/generator/internal/remap",
     "protoc-gen-go/plugin",
-    "ptypes/empty",
   ]
   pruneopts = "UT"
   revision = "b4deda0973fb4c70b50d226b1af49f3da59f5265"
   version = "v1.1.0"
 
 [[projects]]
-  digest = "1:95a5622232535af8a96042824a93f21c4e27c7717e4ee2e02cab787ee2d050e5"
+  digest = "1:54d0dba3bfbd850dd4700d42acc6d99c647a92a5219ff06327f699ee4c4b9799"
   name = "github.com/lyft/protoc-gen-star"
-  packages = ["."]
+  packages = [
+    ".",
+    "lang/go",
+  ]
   pruneopts = "UT"
-  revision = "f3b83fca61817e55058744eb1a3c8e2e95a0dada"
-  version = "v0.3.7"
+  revision = "823d49f5d3173aa539aa885ad369c91baa12b1f9"
+  version = "v0.4.15"
 
 [[projects]]
   digest = "1:bd1ae00087d17c5a748660b8e89e1043e1e5479d0fea743352cda2f8dd8c4f84"
@@ -66,22 +68,6 @@
   version = "v1.8.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:76ee51c3f468493aff39dbacc401e8831fbb765104cbf613b89bef01cf4bad70"
-  name = "golang.org/x/net"
-  packages = ["context"]
-  pruneopts = "UT"
-  revision = "afe8f62b1d6bbd81f31868121a50b06d8188e1f9"
-
-[[projects]]
-  branch = "master"
-  digest = "1:39ebcc2b11457b703ae9ee2e8cca0f68df21969c6102cb3b705f76cca0ea0239"
-  name = "golang.org/x/sync"
-  packages = ["errgroup"]
-  pruneopts = "UT"
-  revision = "1d60e4601c6fd243af51cc01ddf169918a5407ca"
-
-[[projects]]
   digest = "1:8029e9743749d4be5bc9f7d42ea1659471767860f0cdc34d37c3111bd308a295"
   name = "golang.org/x/text"
   packages = [
@@ -100,9 +86,8 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/golang/protobuf/proto",
-    "github.com/golang/protobuf/ptypes/empty",
     "github.com/lyft/protoc-gen-star",
+    "github.com/lyft/protoc-gen-star/lang/go",
     "go.uber.org/zap/zapcore",
   ]
   solver-name = "gps-cdcl"

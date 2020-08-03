@@ -1,8 +1,12 @@
 package templates
 
-import "text/template"
+import (
+	"text/template"
 
-func Template(lang string) *template.Template {
+	pgsgo "github.com/lyft/protoc-gen-star/lang/go"
+)
+
+func Template(ctx pgsgo.Context, lang string) *template.Template {
 
 	// Only go is supported
 	if lang != "go" {
@@ -10,6 +14,6 @@ func Template(lang string) *template.Template {
 	}
 
 	tpl := template.New(lang)
-	Register(tpl)
+	Register(ctx, tpl)
 	return tpl
 }
