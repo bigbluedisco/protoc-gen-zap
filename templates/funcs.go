@@ -179,12 +179,6 @@ for {{ .IndexName }}, {{ .ItemName }} := range {{ .Getter }} {
 o.AddArray("{{ .Key }}", {{ .SliceName }})
 `
 
-const embedTpl = `
-if {{ .Getter }} != nil {
-	o.AddObject("{{ .Key }}, {{ .Getter }})
-}
-`
-
 func render(f pgs.Field) string {
 	t := f.Type()
 	n := f.Name()
@@ -194,8 +188,7 @@ func render(f pgs.Field) string {
 	// repeated
 	if t.IsRepeated() {
 
-		if t.Element().IsEnum() || t.Element().Embed().IsWellKnown() {
-
+		if t.Element().IsEnum() || (t.Element().IsEmbed() && t.Element().Embed().IsWellKnown()) {
 			d := newArrayData("Stringers", getter(n, t), name(f))
 			tpl := template.New("stringers")
 			template.Must(tpl.Parse(arrayTpl))
@@ -205,7 +198,6 @@ func render(f pgs.Field) string {
 			s = bb.String()
 
 		} else if t.Element().IsEmbed() {
-
 			d := newArrayData("Objects", getter(n, t), name(f))
 			tpl := template.New("objects")
 			template.Must(tpl.Parse(arrayTpl))
@@ -215,7 +207,6 @@ func render(f pgs.Field) string {
 			s = bb.String()
 
 		} else if isSimple(t.Element().ProtoType()) {
-
 			s = fmt.Sprintf(`o.AddArray("%s", utils.%s(%s))`, name(f), arrayFunc(t), getter(n, t))
 
 		} else {
