@@ -14,15 +14,10 @@ l.Info("create-user",
 )
 ```
 
-## installation
+## Requirements
 
-Make sure `dep` is installed on your machine, then run:
-
-```bash
-dep ensure
-go build
-go install
-```
+- [protoc](http://google.github.io/proto-lens/installing-protoc.html)
+- [go plugin for protoc](https://developers.google.com/protocol-buffers/docs/gotutorial)
 
 ## running
 
