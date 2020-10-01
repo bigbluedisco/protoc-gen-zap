@@ -183,7 +183,12 @@ if {{ .SliceName }}Length > 100 {
 for i := 0; i < {{ .SliceName }}Length; i++ {
 	{{ .SliceName }}[i] = {{ .Getter }}[i]
 }
-o.AddArray("first_100_{{ .Key }}", {{ .SliceName }})
+
+if {{ .SliceName }}Length == 100 {
+	o.AddArray("first_100_{{ .Key }}", {{ .SliceName }})
+} else {
+	o.AddArray("{{ .Key }}", {{ .SliceName }})
+}
 `
 
 func render(f pgs.Field) string {
