@@ -14,20 +14,15 @@ l.Info("create-user",
 )
 ```
 
-## installation
+## Requirements
 
-Make sure `dep` is installed on your machine, then run:
+- [protoc](http://google.github.io/proto-lens/installing-protoc.html)
+- [go plugin for protoc](https://developers.google.com/protocol-buffers/docs/gotutorial)
 
-```bash
-dep ensure
-go build
-go install
-```
-
-## running
+## running tests
 
 Code generation is done in the `protoc` flow:
 
 ```bash
-protoc -I . -I ${GOPATH}/src --go_out=":./out" --zap_out="lang=go:./out" test.proto
+go install . && protoc -I . -I ${GOPATH}/src --go_out=":./test" --zap_out="lang=go:./test" test/test.proto
 ```

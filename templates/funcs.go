@@ -172,11 +172,23 @@ func newArrayData(sliceType string, getter string, key string) ArrayData {
 }
 
 const arrayTpl = `
-{{ .SliceName }} := make(utils.{{ .SliceType }}, len({{ .Getter }}))
-for {{ .IndexName }}, {{ .ItemName }} := range {{ .Getter }} {
-	{{ .SliceName }}[{{ .IndexName }}] = {{ .ItemName }}
+{{ .SliceName }}Length := len({{ .Getter }})
+o.AddInt("{{ .Key }}_length", {{ .SliceName }}Length)
+
+if {{ .SliceName }}Length > 100 {
+	{{ .SliceName }}Length = 100
 }
-o.AddArray("{{ .Key }}", {{ .SliceName }})
+
+{{ .SliceName }} := make(utils.{{ .SliceType }}, {{ .SliceName }}Length)
+for i := 0; i < {{ .SliceName }}Length; i++ {
+	{{ .SliceName }}[i] = {{ .Getter }}[i]
+}
+
+if {{ .SliceName }}Length == 100 {
+	o.AddArray("first_100_{{ .Key }}", {{ .SliceName }})
+} else {
+	o.AddArray("{{ .Key }}", {{ .SliceName }})
+}
 `
 
 func render(f pgs.Field) string {

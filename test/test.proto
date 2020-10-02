@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package output;
+
+option go_package = "output;output";
+
+message OrderItem {
+    string sku = 1;
+    string bigblue_product = 2;
+    uint32 quantity = 3;
+}
+
+message Order {
+    repeated OrderItem items = 1;
+    repeated OrderItem itemzz = 2;
+}
+
+message blitz {
+    repeated Order buzz = 1;
+}
