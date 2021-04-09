@@ -11,10 +11,16 @@ message OrderItem {
 }
 
 message Order {
-    repeated OrderItem items = 1;
+    repeated OrderItem items_one = 1;
     repeated OrderItem itemzz = 2;
+
+    oneof of {
+        string id = 3;
+        uint32 in = 4;
+        Foo foo = 5;
+    }
 }
 
-message blitz {
-    repeated Order buzz = 1;
+message Foo {
+    string s = 1;
 }

@@ -143,8 +143,32 @@ func arrayFunc(typ pgs.FieldType) string {
 	return "StringArray"
 }
 
+func zeroValue(typ pgs.FieldType) string {
+	switch typ.ProtoType() {
+	case pgs.DoubleT,
+		pgs.FloatT,
+		pgs.Int32T, pgs.SInt32, pgs.SFixed32,
+		pgs.Int64T, pgs.SInt64, pgs.SFixed64,
+		pgs.UInt32T, pgs.Fixed32T,
+		pgs.UInt64T, pgs.Fixed64T, pgs.EnumT:
+		return "0"
+
+	case pgs.BoolT:
+		return "false"
+
+	case pgs.StringT:
+		return `""`
+
+	case pgs.BytesT, pgs.MessageT:
+		return "nil"
+
+	default:
+		return "nil"
+	}
+}
+
 const oneoftpl = `
-if %s != nil {
+if %s != %s {
 	%s
 }
 `
@@ -244,9 +268,10 @@ func render(f pgs.Field) string {
 		s = fmt.Sprintf(`o.%s("%s", %s)`, simpleAddFunc(n, t), name(f), getter(n, t))
 	}
 
-	// of oneof wrap in if != nil
-	if f.OneOf() != nil {
-		s = fmt.Sprintf(oneoftpl, getter(n, t), s)
+	// if oneof wrap in <if not empty>
+	// not required if already wrapped (for embed types)
+	if f.OneOf() != nil && !strings.Contains(s, "!= nil") {
+		s = fmt.Sprintf(oneoftpl, getter(n, t), zeroValue(t), s)
 	}
 
 	return s
