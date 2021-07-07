@@ -26,3 +26,8 @@ Code generation is done in the `protoc` flow:
 ```bash
 go install . && protoc -I . -I ${GOPATH}/src --go_out=":./test" --zap_out="lang=go:./test" test/test.proto
 ```
+
+To obscutate a field, you may use an annotation like in the following example
+```proto
+string bigblue_product = 2 [(zap.obfuscation_type) = HIDE]
+```
