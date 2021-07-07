@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package zap;
+
+import "google/protobuf/descriptor.proto";
+
+option go_package = "github.com/bigbluedisco/protoc-gen-zap/zap";
+
+enum ObfuscationType {
+    OBFUSCATION_TYPE_UNSPECIFIED = 0;
+    HIDE = 1; // Remove field and value from log entierly
+    STARS = 2; // Replace value by 3 stars
+}
+
+extend google.protobuf.FieldOptions {
+    optional ObfuscationType obfuscation_type = 50002;
+}
+
+extend google.protobuf.FieldOptions {
+    optional string foo = 50003;
+}
