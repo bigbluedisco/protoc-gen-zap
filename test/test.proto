@@ -3,14 +3,13 @@ syntax = "proto3";
 package output;
 
 import "zap/zap.proto";
-import "validate/validate.proto";
 
-option go_package = "test;output";
+option go_package = "./test;output";
 
 
 message OrderItem {
     string sku = 1;
-    string bigblue_product = 2 [(zap.obfuscation_type) = HIDE, (validate.rules).string.pattern = "^a_[[:alnum:]]{8}$"];
+    string bigblue_product = 2 [(zap.obfuscation_type) = HIDE];
     uint32 quantity = 3;
 }
 

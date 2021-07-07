@@ -15,7 +15,3 @@ enum ObfuscationType {
 extend google.protobuf.FieldOptions {
     ObfuscationType obfuscation_type = 50002;
 }
-
-// extend google.protobuf.FieldOptions {
-//     string foo = 50003;
-// }

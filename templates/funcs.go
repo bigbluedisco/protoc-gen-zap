@@ -3,9 +3,11 @@ package templates
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"strings"
 	"text/template"
 
+	"github.com/bigbluedisco/protoc-gen-zap/zap"
 	pgs "github.com/lyft/protoc-gen-star"
 	pgsgo "github.com/lyft/protoc-gen-star/lang/go"
 )
@@ -220,6 +222,21 @@ func render(f pgs.Field) string {
 	n := f.Name()
 
 	var s string
+
+	var obsType zap.ObfuscationType
+	if _, err := f.Extension(zap.E_ObfuscationType, &obsType); err != nil {
+		fmt.Fprintf(os.Stderr, "error getting obfuscation_type for field %s: %s", f.Name(), err)
+		return ""
+	}
+
+	switch obsType {
+	case zap.ObfuscationType_HIDE:
+		return ""
+	case zap.ObfuscationType_STARS:
+		return fmt.Sprintf(`
+				o.AddString("%s", "***")
+`, name(f))
+	}
 
 	// repeated
 	if t.IsRepeated() {

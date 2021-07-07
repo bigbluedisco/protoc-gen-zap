@@ -48,4 +48,4 @@ Temporary Items
 vendor
 zaptest
 
-test/*.go
+test/test
