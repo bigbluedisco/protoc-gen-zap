@@ -30,12 +30,14 @@ func newMapData(f pgs.Field, obsType zap.ObfuscationType) mapData {
 }
 
 const mapTpl = `
-for key, value := range {{ .Getter }} {
-	{{ if .IsStars }}
+{{ if .IsStars }}
+for key := range {{ .Getter }} {
 		o.AddString("{{ .MapName }}_" + key, "***")
 		continue
-	{{ else }}
-		o.{{ .AddFunc }}("{{ .MapName }}_" + {{ .FormatKey }}, value)
-	{{ end }}
 }
+{{ else }}
+for key, value := range {{ .Getter }} {
+		o.{{ .AddFunc }}("{{ .MapName }}_" + {{ .FormatKey }}, value)
+}
+{{ end }}
 `
