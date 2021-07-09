@@ -28,6 +28,8 @@ message Order {
     map<string, uint32> my_map = 7;
 
     map<uint32, string> my_integer_map = 8;
+
+    repeated OrderItem coucou = 9 [(zap.obfuscation_type) = STARS];
 }
 
 message Foo {
