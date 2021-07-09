@@ -4,7 +4,7 @@ package output;
 
 import "zap/zap.proto";
 
-option go_package = ".;output";
+option go_package = "./test;output";
 
 
 message OrderItem {
