@@ -9,7 +9,7 @@ option go_package = "./test;output";
 
 message OrderItem {
     string sku = 1;
-    string bigblue_product = 2 [(zap.obfuscation_type) = HIDE];
+    string bigblue_product = 2 [(zap.obfuscation_type) = STARS];
     uint32 quantity = 3;
 }
 
@@ -22,6 +22,12 @@ message Order {
         uint32 in = 4;
         Foo foo = 5;
     }
+
+    map<string, string> my_hidden_map = 6 [(zap.obfuscation_type) = STARS];
+    
+    map<string, uint32> my_map = 7;
+
+    map<uint32, string> my_integer_map = 8;
 }
 
 message Foo {
