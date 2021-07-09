@@ -3,7 +3,6 @@ package templates
 import (
 	"bytes"
 	"fmt"
-	"os"
 	"strings"
 	"text/template"
 
@@ -235,8 +234,7 @@ func render(f pgs.Field) string {
 
 	var obsType zap.ObfuscationType
 	if _, err := f.Extension(zap.E_ObfuscationType, &obsType); err != nil {
-		fmt.Fprintf(os.Stderr, "error getting obfuscation_type for field %s: %s", f.Name(), err)
-		return ""
+		panic(fmt.Sprintf("error getting obfuscation_type for field %s: %s", f.Name(), err))
 	}
 
 	if obsType == zap.ObfuscationType_HIDE {
