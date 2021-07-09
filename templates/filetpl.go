@@ -14,6 +14,7 @@ import (
 var (
 	_ = (*utils.Interfaces)(nil)
 	_ = zapcore.InfoLevel
+	_ = strconv.IntSize
 )
 
 {{ range .AllMessages }}
