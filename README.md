@@ -29,5 +29,9 @@ go install . && protoc -I . -I ${GOPATH}/src --go_out=":./test" --zap_out="lang=
 
 To obscutate a field, you may use an annotation like in the following example
 ```proto
-string bigblue_product = 2 [(zap.obfuscation_type) = HIDE]
+message Test {
+    string secret_id = 1 [(zap.obfuscation_type) = HIDE];
+    map<string, string> my_hidden_map = 2 [(zap.obfuscation_type) = STARS];
+    repeated string string_array = 3 [(zap.obfuscation_type) = STARS];
+}
 ```
