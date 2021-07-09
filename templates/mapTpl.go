@@ -33,7 +33,6 @@ const mapTpl = `
 {{ if .IsStars }}
 for key := range {{ .Getter }} {
 		o.AddString("{{ .MapName }}_" + key, "***")
-		continue
 }
 {{ else }}
 for key, value := range {{ .Getter }} {
