@@ -246,7 +246,16 @@ func render(f pgs.Field) string {
 	// repeated
 	if t.IsRepeated() {
 
-		if t.Element().IsEnum() || (t.Element().IsEmbed() && t.Element().Embed().IsWellKnown()) {
+		if obsType == zap.ObfuscationType_STARS {
+			d := newArrayData("StringArray", getter(n, t), name(f), obsType)
+			tpl := template.New("stringers")
+			template.Must(tpl.Parse(arrayTpl))
+			bb := bytes.NewBufferString("")
+			_ = tpl.Execute(bb, d)
+
+			s = bb.String()
+
+		} else if t.Element().IsEnum() || (t.Element().IsEmbed() && t.Element().Embed().IsWellKnown()) {
 
 			d := newArrayData("Stringers", getter(n, t), name(f), obsType)
 			tpl := template.New("stringers")
@@ -299,7 +308,7 @@ func render(f pgs.Field) string {
 		bb := bytes.NewBufferString("")
 		_ = tpl.Execute(bb, d)
 
-		return bb.String()
+		s = bb.String()
 
 	} else {
 		if obsType == zap.ObfuscationType_STARS {
