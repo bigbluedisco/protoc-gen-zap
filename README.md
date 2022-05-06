@@ -27,13 +27,13 @@ Code generation is done in the `protoc` flow:
 go install . && protoc -I . -I ${GOPATH}/src --go_out=":./test" --zap_out="lang=go:./test" test/test.proto
 ```
 
-To obfsucate a field, you may use an annotation like in the following example
+To obfuscate a field, you can use an annotation as in the following example
 ```proto
 message Test {
-    string id = 1 [(zap.obfuscation_type) = STARS]; // Replace the value with 3 stars.
-    string secret_id = 2 [(zap.obfuscation_type) = HIDE]; // Removes the field from the logs.
-    map<string, string> my_hidden_map = 3 [(zap.obfuscation_type) = STARS];
-    repeated uint32 uint_array = 4 [(zap.obfuscation_type) = STARS];
+    string id = 1 [(obfuscation.rule) = STARS]; // Replace the value with 3 stars.
+    string secret_id = 2 [(obfuscation.rule) = HIDE]; // Removes the field from the logs.
+    map<string, string> my_hidden_map = 3 [(obfuscation.rule) = STARS];
+    repeated uint32 uint_array = 4 [(obfuscation.rule) = STARS];
 }
 ```
 

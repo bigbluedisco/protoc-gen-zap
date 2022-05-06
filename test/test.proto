@@ -2,14 +2,14 @@ syntax = "proto3";
 
 package output;
 
-import "zap/zap.proto";
+import "github.com/bigbluedisco/protoc-gen-privacy/rule.proto";
 
 option go_package = "./test;output";
 
 
 message OrderItem {
     string sku = 1;
-    string bigblue_product = 2 [(zap.obfuscation_type) = STARS];
+    string bigblue_product = 2 [(privacy.rule) = STARS];
     uint32 quantity = 3;
 }
 
@@ -23,13 +23,13 @@ message Order {
         Foo foo = 5;
     }
 
-    map<string, string> my_hidden_map = 6 [(zap.obfuscation_type) = STARS];
+    map<string, string> my_hidden_map = 6 [(privacy.rule) = STARS];
     
     map<string, uint32> my_map = 7;
 
     map<uint32, string> my_integer_map = 8;
 
-    repeated OrderItem coucou = 9 [(zap.obfuscation_type) = STARS];
+    repeated OrderItem coucou = 9 [(privacy.rule) = STARS];
 }
 
 message Foo {

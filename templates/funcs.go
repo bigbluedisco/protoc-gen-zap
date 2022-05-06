@@ -6,7 +6,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/bigbluedisco/protoc-gen-zap/zap"
+	privacy "github.com/bigbluedisco/protoc-gen-privacy"
 	pgs "github.com/lyft/protoc-gen-star"
 	pgsgo "github.com/lyft/protoc-gen-star/lang/go"
 )
@@ -188,7 +188,7 @@ type ArrayData struct {
 	IsStars   bool
 }
 
-func newArrayData(sliceType string, getter string, key string, obs zap.ObfuscationType) ArrayData {
+func newArrayData(sliceType string, getter string, key string, obs privacy.Rule) ArrayData {
 	name := strings.Replace(key, "_", "", -1) + strings.ToLower(sliceType)
 	return ArrayData{
 		SliceName: name,
@@ -197,7 +197,7 @@ func newArrayData(sliceType string, getter string, key string, obs zap.Obfuscati
 		SliceType: sliceType,
 		Getter:    getter,
 		Key:       key,
-		IsStars:   obs == zap.ObfuscationType_STARS,
+		IsStars:   obs == privacy.Rule_STARS,
 	}
 }
 
@@ -213,7 +213,6 @@ if {{ .SliceName }}Length > 100 {
 for i := 0; i < {{ .SliceName }}Length; i++ {
 	{{ if .IsStars }}
 		{{ .SliceName }}[i] = "***"	
-		continue
 	{{ else }}
 		{{ .SliceName }}[i] = {{ .Getter }}[i]
 	{{ end }}
@@ -232,19 +231,19 @@ func render(f pgs.Field) string {
 
 	var s string
 
-	var obsType zap.ObfuscationType
-	if _, err := f.Extension(zap.E_ObfuscationType, &obsType); err != nil {
-		panic(fmt.Sprintf("error getting obfuscation_type for field %s: %s", f.Name(), err))
+	var obsType privacy.Rule
+	if _, err := f.Extension(privacy.E_Rule, &obsType); err != nil {
+		panic(fmt.Sprintf("error getting rule for field %s: %s", f.Name(), err))
 	}
 
-	if obsType == zap.ObfuscationType_HIDE {
+	if obsType == privacy.Rule_HIDE {
 		return ""
 	}
 
 	// repeated
 	if t.IsRepeated() {
 
-		if obsType == zap.ObfuscationType_STARS {
+		if obsType == privacy.Rule_STARS {
 			d := newArrayData("StringArray", getter(n, t), name(f), obsType)
 			tpl := template.New("stringers")
 			template.Must(tpl.Parse(arrayTpl))
@@ -284,7 +283,7 @@ func render(f pgs.Field) string {
 			s = bb.String()
 		}
 	} else if t.IsEmbed() {
-		if obsType == zap.ObfuscationType_STARS {
+		if obsType == privacy.Rule_STARS {
 			return fmt.Sprintf("\no.AddString(\"%s\", \"***\")\n", name(f))
 		}
 
@@ -299,7 +298,6 @@ func render(f pgs.Field) string {
 		}
 	} else if t.IsMap() {
 		d := newMapData(f, obsType)
-
 		tpl := template.New("map")
 		template.Must(tpl.Parse(mapTpl))
 		bb := bytes.NewBufferString("")
@@ -308,16 +306,17 @@ func render(f pgs.Field) string {
 		s = bb.String()
 
 	} else {
-		if obsType == zap.ObfuscationType_STARS {
+		if obsType == privacy.Rule_STARS {
 			return fmt.Sprintf("\no.AddString(\"%s\", \"***\")\n", name(f))
 		}
+
 		s = fmt.Sprintf(`o.%s("%s", %s)`, simpleAddFunc(t), name(f), getter(n, t))
 	}
 
 	// if oneof wrap in <if not empty>
 	// not required if already wrapped (for embed types)
 	if f.OneOf() != nil && !strings.Contains(s, "!= nil") {
-		s = fmt.Sprintf(oneoftpl, getter(n, t), zeroValue(t), s)
+		return fmt.Sprintf(oneoftpl, getter(n, t), zeroValue(t), s)
 	}
 
 	return s
