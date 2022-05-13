@@ -21,6 +21,7 @@ message Order {
         string id = 3;
         uint32 in = 4;
         Foo foo = 5;
+        string hidden = 10 [(privacy.rule) = STARS];
     }
 
     map<string, string> my_hidden_map = 6 [(privacy.rule) = STARS];
