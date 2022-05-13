@@ -189,6 +189,10 @@ type ArrayData struct {
 }
 
 func newArrayData(sliceType string, getter string, key string, obs privacy.Rule) ArrayData {
+	if obs == privacy.Rule_STARS {
+		sliceType = "StringArray"
+	}
+
 	name := strings.Replace(key, "_", "", -1) + strings.ToLower(sliceType)
 	return ArrayData{
 		SliceName: name,
@@ -243,16 +247,7 @@ func render(f pgs.Field) string {
 	// repeated
 	if t.IsRepeated() {
 
-		if obsType == privacy.Rule_STARS {
-			d := newArrayData("StringArray", getter(n, t), name(f), obsType)
-			tpl := template.New("stringers")
-			template.Must(tpl.Parse(arrayTpl))
-			bb := bytes.NewBufferString("")
-			_ = tpl.Execute(bb, d)
-
-			s = bb.String()
-
-		} else if t.Element().IsEnum() || (t.Element().IsEmbed() && t.Element().Embed().IsWellKnown()) {
+		if t.Element().IsEnum() || (t.Element().IsEmbed() && t.Element().Embed().IsWellKnown()) {
 			d := newArrayData("Stringers", getter(n, t), name(f), obsType)
 			tpl := template.New("stringers")
 			template.Must(tpl.Parse(arrayTpl))
