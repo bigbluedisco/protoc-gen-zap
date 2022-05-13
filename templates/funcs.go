@@ -302,7 +302,7 @@ func render(f pgs.Field) string {
 
 	} else {
 		if obsType == privacy.Rule_STARS {
-			return fmt.Sprintf("\no.AddString(\"%s\", \"***\")\n", name(f))
+			s = fmt.Sprintf("\no.AddString(\"%s\", \"***\")\n", name(f))
 		}
 
 		s = fmt.Sprintf(`o.%s("%s", %s)`, simpleAddFunc(t), name(f), getter(n, t))
