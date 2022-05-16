@@ -6,9 +6,14 @@ import (
 	"strings"
 	"text/template"
 
+	privacy "github.com/bigbluedisco/protoc-gen-privacy"
 	pgs "github.com/lyft/protoc-gen-star"
 	pgsgo "github.com/lyft/protoc-gen-star/lang/go"
 )
+
+type protoType interface {
+	ProtoType() pgs.ProtoType
+}
 
 // Register adds a render function to the template
 func Register(ctx pgsgo.Context, tpl *template.Template) {
@@ -61,8 +66,7 @@ func isSimple(t pgs.ProtoType) bool {
 	return false
 }
 
-func simpleAddFunc(n pgs.Name, t pgs.FieldType) string {
-
+func simpleAddFunc(t protoType) string {
 	switch t.ProtoType() {
 	case pgs.EnumT:
 		return "AddString"
@@ -181,9 +185,14 @@ type ArrayData struct {
 	SliceType string
 	Getter    string
 	Key       string
+	IsStars   bool
 }
 
-func newArrayData(sliceType string, getter string, key string) ArrayData {
+func newArrayData(sliceType string, getter string, key string, obs privacy.Rule) ArrayData {
+	if obs == privacy.Rule_STARS {
+		sliceType = "StringArray"
+	}
+
 	name := strings.Replace(key, "_", "", -1) + strings.ToLower(sliceType)
 	return ArrayData{
 		SliceName: name,
@@ -192,6 +201,7 @@ func newArrayData(sliceType string, getter string, key string) ArrayData {
 		SliceType: sliceType,
 		Getter:    getter,
 		Key:       key,
+		IsStars:   obs == privacy.Rule_STARS,
 	}
 }
 
@@ -205,7 +215,11 @@ if {{ .SliceName }}Length > 100 {
 
 {{ .SliceName }} := make(utils.{{ .SliceType }}, {{ .SliceName }}Length)
 for i := 0; i < {{ .SliceName }}Length; i++ {
-	{{ .SliceName }}[i] = {{ .Getter }}[i]
+	{{ if .IsStars }}
+		{{ .SliceName }}[i] = "***"	
+	{{ else }}
+		{{ .SliceName }}[i] = {{ .Getter }}[i]
+	{{ end }}
 }
 
 if {{ .SliceName }}Length == 100 {
@@ -221,11 +235,20 @@ func render(f pgs.Field) string {
 
 	var s string
 
+	var obsType privacy.Rule
+	if _, err := f.Extension(privacy.E_Rule, &obsType); err != nil {
+		panic(fmt.Sprintf("error getting rule for field %s: %s", f.Name(), err))
+	}
+
+	if obsType == privacy.Rule_HIDE {
+		return ""
+	}
+
 	// repeated
 	if t.IsRepeated() {
 
 		if t.Element().IsEnum() || (t.Element().IsEmbed() && t.Element().Embed().IsWellKnown()) {
-			d := newArrayData("Stringers", getter(n, t), name(f))
+			d := newArrayData("Stringers", getter(n, t), name(f), obsType)
 			tpl := template.New("stringers")
 			template.Must(tpl.Parse(arrayTpl))
 			bb := bytes.NewBufferString("")
@@ -234,7 +257,7 @@ func render(f pgs.Field) string {
 			s = bb.String()
 
 		} else if t.Element().IsEmbed() {
-			d := newArrayData("Objects", getter(n, t), name(f))
+			d := newArrayData("Objects", getter(n, t), name(f), obsType)
 			tpl := template.New("objects")
 			template.Must(tpl.Parse(arrayTpl))
 			bb := bytes.NewBufferString("")
@@ -246,7 +269,7 @@ func render(f pgs.Field) string {
 			s = fmt.Sprintf(`o.AddArray("%s", utils.%s(%s))`, name(f), arrayFunc(t), getter(n, t))
 
 		} else {
-			d := newArrayData("Interfaces", getter(n, t), name(f))
+			d := newArrayData("Interfaces", getter(n, t), name(f), obsType)
 			tpl := template.New("interfaces")
 			template.Must(tpl.Parse(arrayTpl))
 			bb := bytes.NewBufferString("")
@@ -255,7 +278,9 @@ func render(f pgs.Field) string {
 			s = bb.String()
 		}
 	} else if t.IsEmbed() {
-		if t.Embed().IsWellKnown() {
+		if obsType == privacy.Rule_STARS {
+			s = fmt.Sprintf("\no.AddString(\"%s\", \"***\")\n", name(f))
+		} else if t.Embed().IsWellKnown() {
 			s = fmt.Sprintf(`if %s != nil {
 				o.AddString("%s", %s.String())
 			}`, getter(n, t), name(f), getter(n, t))
@@ -264,14 +289,30 @@ func render(f pgs.Field) string {
 				o.AddObject("%s", %s)
 			}`, getter(n, t), name(f), getter(n, t))
 		}
+	} else if t.IsMap() {
+		d := newMapData(f, obsType)
+		tpl := template.New("map")
+		template.Must(tpl.Parse(mapTpl))
+		bb := bytes.NewBufferString("")
+		_ = tpl.Execute(bb, d)
+
+		s = bb.String()
+
 	} else {
-		s = fmt.Sprintf(`o.%s("%s", %s)`, simpleAddFunc(n, t), name(f), getter(n, t))
+		if obsType == privacy.Rule_STARS {
+			s = fmt.Sprintf("\no.AddString(\"%s\", \"***\")\n", name(f))
+		}
+
+		s = fmt.Sprintf(`o.%s("%s", %s)`, simpleAddFunc(t), name(f), getter(n, t))
 	}
 
 	// if oneof wrap in <if not empty>
 	// not required if already wrapped (for embed types)
 	if f.OneOf() != nil && !strings.Contains(s, "!= nil") {
-		s = fmt.Sprintf(oneoftpl, getter(n, t), zeroValue(t), s)
+		if obsType == privacy.Rule_STARS {
+			return fmt.Sprintf(oneoftpl, getter(n, t), zeroValue(t), "o.AddString(\"of\", \"***\")")
+		}
+		return fmt.Sprintf(oneoftpl, getter(n, t), zeroValue(t), s)
 	}
 
 	return s

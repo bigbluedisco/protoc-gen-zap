@@ -26,3 +26,40 @@ Code generation is done in the `protoc` flow:
 ```bash
 go install . && protoc -I . -I ${GOPATH}/src --go_out=":./test" --zap_out="lang=go:./test" test/test.proto
 ```
+
+To obfuscate a field, you can use an annotation as in the following example
+```proto
+message Test {
+    string id = 1 [(obfuscation.rule) = STARS]; // Replace the value with 3 stars.
+    string secret_id = 2 [(obfuscation.rule) = HIDE]; // Removes the field from the logs.
+    map<string, string> my_hidden_map = 3 [(obfuscation.rule) = STARS];
+    repeated uint32 uint_array = 4 [(obfuscation.rule) = STARS];
+}
+```
+
+The result 
+```go
+func (c Test) MarshalLogObject(o zapcore.ObjectEncoder) error {
+
+	o.AddString("id", "***")
+
+	for key := range c.GetMyHiddenMap() {
+		  o.AddString("my_hidden_map_"+key, "***")
+	}
+
+	uintarrayLength := len(c.GetCoucou())
+	o.AddInt("coucou_length", uintarrayLength)
+
+	if uintarrayLength > 100 {
+		uintarrayLength = 100
+	}
+
+	uintarray := make(utils.StringArray, uintarrayLength)
+	for i := 0; i < uintarrayLength; i++ {
+		uintarray[i] = "***"
+		continue
+	}
+
+	return nil
+}
+```

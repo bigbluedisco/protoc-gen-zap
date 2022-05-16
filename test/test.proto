@@ -2,11 +2,14 @@ syntax = "proto3";
 
 package output;
 
-option go_package = "output;output";
+import "github.com/bigbluedisco/protoc-gen-privacy/rule.proto";
+
+option go_package = "./test;output";
+
 
 message OrderItem {
     string sku = 1;
-    string bigblue_product = 2;
+    string bigblue_product = 2 [(privacy.rule) = STARS];
     uint32 quantity = 3;
 }
 
@@ -18,7 +21,16 @@ message Order {
         string id = 3;
         uint32 in = 4;
         Foo foo = 5;
+        string hidden = 10 [(privacy.rule) = STARS];
     }
+
+    map<string, string> my_hidden_map = 6 [(privacy.rule) = STARS];
+    
+    map<string, uint32> my_map = 7;
+
+    map<uint32, string> my_integer_map = 8;
+
+    repeated OrderItem coucou = 9 [(privacy.rule) = STARS];
 }
 
 message Foo {
