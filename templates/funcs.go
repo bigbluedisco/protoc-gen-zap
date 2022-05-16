@@ -279,10 +279,8 @@ func render(f pgs.Field) string {
 		}
 	} else if t.IsEmbed() {
 		if obsType == privacy.Rule_STARS {
-			return fmt.Sprintf("\no.AddString(\"%s\", \"***\")\n", name(f))
-		}
-
-		if t.Embed().IsWellKnown() {
+			s = fmt.Sprintf("\no.AddString(\"%s\", \"***\")\n", name(f))
+		} else if t.Embed().IsWellKnown() {
 			s = fmt.Sprintf(`if %s != nil {
 				o.AddString("%s", %s.String())
 			}`, getter(n, t), name(f), getter(n, t))
@@ -311,6 +309,9 @@ func render(f pgs.Field) string {
 	// if oneof wrap in <if not empty>
 	// not required if already wrapped (for embed types)
 	if f.OneOf() != nil && !strings.Contains(s, "!= nil") {
+		if obsType == privacy.Rule_STARS {
+			return fmt.Sprintf(oneoftpl, getter(n, t), zeroValue(t), "o.AddString(\"of\", \"***\")")
+		}
 		return fmt.Sprintf(oneoftpl, getter(n, t), zeroValue(t), s)
 	}
 
