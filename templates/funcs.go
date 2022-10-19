@@ -37,7 +37,6 @@ func getter(n pgs.Name, t pgs.FieldType) string {
 }
 
 func name(f pgs.Field) string {
-
 	if f.InOneOf() {
 		return f.OneOf().Name().String()
 	}
@@ -62,7 +61,6 @@ func isSimple(t pgs.ProtoType) bool {
 }
 
 func simpleAddFunc(n pgs.Name, t pgs.FieldType) string {
-
 	switch t.ProtoType() {
 	case pgs.EnumT:
 		return "AddString"
@@ -105,7 +103,6 @@ func simpleAddFunc(n pgs.Name, t pgs.FieldType) string {
 }
 
 func arrayFunc(typ pgs.FieldType) string {
-
 	switch typ.Element().ProtoType() {
 	case pgs.DoubleT:
 		// proto: double
@@ -223,7 +220,6 @@ func render(f pgs.Field) string {
 
 	// repeated
 	if t.IsRepeated() {
-
 		if t.Element().IsEnum() || (t.Element().IsEmbed() && t.Element().Embed().IsWellKnown()) {
 			d := newArrayData("Stringers", getter(n, t), name(f))
 			tpl := template.New("stringers")
@@ -244,7 +240,6 @@ func render(f pgs.Field) string {
 
 		} else if isSimple(t.Element().ProtoType()) {
 			s = fmt.Sprintf(`o.AddArray("%s", utils.%s(%s))`, name(f), arrayFunc(t), getter(n, t))
-
 		} else {
 			d := newArrayData("Interfaces", getter(n, t), name(f))
 			tpl := template.New("interfaces")
@@ -271,7 +266,15 @@ func render(f pgs.Field) string {
 	// if oneof wrap in <if not empty>
 	// not required if already wrapped (for embed types)
 	if f.OneOf() != nil && !strings.Contains(s, "!= nil") {
-		s = fmt.Sprintf(oneoftpl, getter(n, t), zeroValue(t), s)
+		g := getter(n, t)
+
+		if t.IsEnum() {
+			// getter() return the string value of enums.
+			// but enums can't be compared as string in one of marshaling.
+			g = fmt.Sprintf("c.Get%s()", n.UpperCamelCase())
+		}
+
+		s = fmt.Sprintf(oneoftpl, g, zeroValue(t), s)
 	}
 
 	return s
