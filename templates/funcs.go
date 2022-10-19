@@ -30,7 +30,7 @@ func getter(n pgs.Name, t pgs.FieldType) string {
 	s := fmt.Sprintf("c.Get%s()", n.UpperCamelCase())
 
 	if t.IsEnum() {
-		return s
+		return s + ".String()"
 	}
 
 	return s
@@ -266,7 +266,15 @@ func render(f pgs.Field) string {
 	// if oneof wrap in <if not empty>
 	// not required if already wrapped (for embed types)
 	if f.OneOf() != nil && !strings.Contains(s, "!= nil") {
-		s = fmt.Sprintf(oneoftpl, getter(n, t), zeroValue(t), s)
+		g := getter(n, t)
+
+		if t.IsEnum() {
+			// getter() return the string value of enums.
+			// but enums can't be compared as string in one of marshaling.
+			g = fmt.Sprintf("c.Get%s()", n.UpperCamelCase())
+		}
+
+		s = fmt.Sprintf(oneoftpl, g, zeroValue(t), s)
 	}
 
 	return s
