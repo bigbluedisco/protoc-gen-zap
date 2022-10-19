@@ -30,14 +30,13 @@ func getter(n pgs.Name, t pgs.FieldType) string {
 	s := fmt.Sprintf("c.Get%s()", n.UpperCamelCase())
 
 	if t.IsEnum() {
-		return s + ".String()"
+		return s
 	}
 
 	return s
 }
 
 func name(f pgs.Field) string {
-
 	if f.InOneOf() {
 		return f.OneOf().Name().String()
 	}
@@ -62,7 +61,6 @@ func isSimple(t pgs.ProtoType) bool {
 }
 
 func simpleAddFunc(n pgs.Name, t pgs.FieldType) string {
-
 	switch t.ProtoType() {
 	case pgs.EnumT:
 		return "AddString"
@@ -105,7 +103,6 @@ func simpleAddFunc(n pgs.Name, t pgs.FieldType) string {
 }
 
 func arrayFunc(typ pgs.FieldType) string {
-
 	switch typ.Element().ProtoType() {
 	case pgs.DoubleT:
 		// proto: double
@@ -223,7 +220,6 @@ func render(f pgs.Field) string {
 
 	// repeated
 	if t.IsRepeated() {
-
 		if t.Element().IsEnum() || (t.Element().IsEmbed() && t.Element().Embed().IsWellKnown()) {
 			d := newArrayData("Stringers", getter(n, t), name(f))
 			tpl := template.New("stringers")
@@ -244,7 +240,6 @@ func render(f pgs.Field) string {
 
 		} else if isSimple(t.Element().ProtoType()) {
 			s = fmt.Sprintf(`o.AddArray("%s", utils.%s(%s))`, name(f), arrayFunc(t), getter(n, t))
-
 		} else {
 			d := newArrayData("Interfaces", getter(n, t), name(f))
 			tpl := template.New("interfaces")
