@@ -250,7 +250,7 @@ func render(f pgs.Field) string {
 			s = bb.String()
 		}
 	} else if t.IsEmbed() {
-		if t.Embed().IsWellKnown() {
+		if t.Embed().IsWellKnown() || t.Embed().Package().ProtoName() == pgs.WellKnownTypePackage {
 			s = fmt.Sprintf(`if %s != nil {
 				o.AddString("%s", %s.String())
 			}`, getter(n, t), name(f), getter(n, t))
