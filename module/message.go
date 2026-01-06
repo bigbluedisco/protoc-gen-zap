@@ -62,10 +62,12 @@ func generateField(g *protogen.GeneratedFile, field *protogen.Field) error {
 				g.P(s)
 			}
 		} else if isSimple(field.Desc.Kind()) {
-			g.P("o.AddArray(\"", fieldName(field), "\", ", g.QualifiedGoIdent(protogen.GoIdent{
+			g.P("if err := o.AddArray(\"", fieldName(field), "\", ", g.QualifiedGoIdent(protogen.GoIdent{
 				GoImportPath: "github.com/bigbluedisco/protoc-gen-zap/utils",
 				GoName:       arrayFunc(field.Desc.Kind()),
-			}), "(", getter(field, false), "))")
+			}), "(", getter(field, false), ")); err != nil {")
+			g.P("return err")
+			g.P("}")
 		} else {
 			d := newArrayData("Interfaces", getter(field, false), fieldName(field))
 			if s, err := d.Render(g); err != nil {
@@ -90,7 +92,9 @@ func generateField(g *protogen.GeneratedFile, field *protogen.Field) error {
 			if !alreadyCheckedNil {
 				g.P("if ", getter(field, true), " != nil {")
 			}
-			g.P("o.AddObject(\"", fieldName(field), "\", ", getter(field, true), ")")
+			g.P("if err := o.AddObject(\"", fieldName(field), "\", ", getter(field, true), "); err != nil {")
+			g.P("return err")
+			g.P("}")
 			if !alreadyCheckedNil {
 				g.P("}")
 			}
@@ -170,9 +174,13 @@ for i := 0; i < {{ .SliceName }}Length; i++ {
 }
 
 if {{ .SliceName }}Length == 100 {
-	o.AddArray("first_100_{{ .Key }}", {{ .SliceName }})
+	if err := o.AddArray("first_100_{{ .Key }}", {{ .SliceName }}); err != nil {
+		return err
+	}
 } else {
-	o.AddArray("{{ .Key }}", {{ .SliceName }})
+	if err := o.AddArray("{{ .Key }}", {{ .SliceName }}); err != nil {
+		return err
+	}
 }
 `
 
