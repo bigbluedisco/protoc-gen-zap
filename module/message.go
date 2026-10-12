@@ -9,7 +9,28 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
-const wellKnowTypeImportPath = "google.golang.org/protobuf/types/known"
+// stringerImportPaths are the Go import path prefixes of messages that this
+// plugin does not generate a zapcore.ObjectMarshaler for. Those messages are
+// logged through their String() method instead.
+var stringerImportPaths = []string{
+	// Well-known types (google.protobuf.Timestamp, Duration...).
+	"google.golang.org/protobuf/types/known",
+	// googleapis common types (google.type.TimeOfDay, Date, Money,
+	// google.rpc.Status...).
+	"google.golang.org/genproto/googleapis/",
+}
+
+// isStringerMessage reports whether message must be logged as a string because
+// its Go type does not implement zapcore.ObjectMarshaler.
+func isStringerMessage(message *protogen.Message) bool {
+	importPath := string(message.GoIdent.GoImportPath)
+	for _, prefix := range stringerImportPaths {
+		if strings.HasPrefix(importPath, prefix) {
+			return true
+		}
+	}
+	return false
+}
 
 func generateMessage(g *protogen.GeneratedFile, message *protogen.Message) error {
 	g.P("// MarshalLogObject makes ", message.GoIdent, " implement zap.ObjectMarshaler")
@@ -47,7 +68,7 @@ func generateField(g *protogen.GeneratedFile, field *protogen.Field) error {
 	switch {
 	case field.Desc.IsList():
 
-		if field.Enum != nil || (field.Message != nil && strings.HasPrefix(string(field.Message.GoIdent.GoImportPath), wellKnowTypeImportPath)) {
+		if field.Enum != nil || (field.Message != nil && isStringerMessage(field.Message)) {
 			d := newArrayData("Stringers", getter(field, false), fieldName(field))
 			if s, err := d.Render(g); err != nil {
 				return err
@@ -79,7 +100,7 @@ func generateField(g *protogen.GeneratedFile, field *protogen.Field) error {
 
 	case field.Message != nil && field.Desc.MapKey() == nil:
 
-		if strings.HasPrefix(string(field.Message.GoIdent.GoImportPath), wellKnowTypeImportPath) {
+		if isStringerMessage(field.Message) {
 
 			if !alreadyCheckedNil {
 				g.P("if ", getter(field, true), " != nil {")

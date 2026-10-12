@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package output;
 
-option go_package = "output;output";
+option go_package = "github.com/bigbluedisco/protoc-gen-zap/test/output;output";
 
 message OrderItem {
     string sku = 1;
