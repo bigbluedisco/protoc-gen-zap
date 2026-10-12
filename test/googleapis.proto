@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package output;
+
+import "google/protobuf/timestamp.proto";
+import "google/type/timeofday.proto";
+
+option go_package = "github.com/bigbluedisco/protoc-gen-zap/test/output;output";
+
+// Schedule references googleapis common types (google.type.*), whose Go
+// structs live outside this plugin run and do not implement
+// zapcore.ObjectMarshaler.
+message Schedule {
+    google.type.TimeOfDay cutoff = 1;
+    repeated google.type.TimeOfDay slots = 2;
+    map<string, google.type.TimeOfDay> slots_by_carrier = 3;
+
+    oneof window {
+        google.type.TimeOfDay window_start = 4;
+        string window_name = 5;
+    }
+
+    google.protobuf.Timestamp created_at = 6;
+    repeated google.protobuf.Timestamp updated_at = 7;
+}

@@ -21,8 +21,9 @@ l.Info("create-user",
 
 ## running tests
 
-Code generation is done in the `protoc` flow:
+Tests live in the `test` Go module. Code is generated from `test/*.proto` with [buf](https://buf.build) (which
+resolves the googleapis dependency), using the plugin built from this checkout, then compiled and exercised:
 
 ```bash
-go install . && protoc -I . -I ${GOPATH}/src --go_out=":./test" --zap_out="lang=go:./test" test/test.proto
+cd test && buf generate && go test ./...
 ```

@@ -1,0 +1,12 @@
+# Plugins are built from the root module (go run -C ..) so that they use the
+# plugin's own go.mod, not this test module's dependency graph.
+version: v2
+plugins:
+  - local: ["go", "run", "-C", "..", "google.golang.org/protobuf/cmd/protoc-gen-go"]
+    out: .
+    opt: module=github.com/bigbluedisco/protoc-gen-zap/test
+  - local: ["go", "run", "-C", "..", "."]
+    out: .
+    opt:
+      - lang=go
+      - module=github.com/bigbluedisco/protoc-gen-zap/test
